@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homelab</title>
+<style>
+html,body{margin:0;height:100%;background:#0d0f12;color:#e9e9e6;font-family:Roboto,"Segoe UI",Helvetica,Arial,sans-serif;overflow:hidden}
+.wrap{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;height:100%;padding:2.2vh 2.4vw;box-sizing:border-box}
+.top{display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;-webkit-align-items:flex-end;align-items:flex-end;padding-bottom:2vh;border-bottom:1px solid #22262c}
+.left{display:-webkit-flex;display:flex;-webkit-align-items:baseline;align-items:baseline}
+.clock{font-size:11vh;font-weight:700;line-height:1}
+.clock small{font-size:3.4vh;font-weight:500;margin-left:.6vw;color:#9aa0a8}
+.date{font-size:3.4vh;color:#9aa0a8;margin-left:2vw}
+.status{text-align:right}
+.pill{font-size:5vh;font-weight:700}
+.dot{display:inline-block;width:3vh;height:3vh;border-radius:.6vh;margin-right:1vw;vertical-align:middle}
+.sub{font-size:2.6vh;color:#9aa0a8;margin-top:.6vh}
+.tiles{display:-webkit-flex;display:flex;-webkit-flex:1;flex:1;margin:2vh 0}
+.tile{-webkit-flex:1;flex:1;background:#15181d;border-radius:1.2vh;margin-right:1.4vw;padding:2.2vh 1.6vw;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-justify-content:center;justify-content:center;min-width:0}
+.tile.last{margin-right:0}
+.lbl{font-size:2.5vh;color:#9aa0a8}
+.big{font-size:9vh;font-weight:700;line-height:1.05}
+.big small,.mid small{font-size:3.4vh;font-weight:500;color:#9aa0a8}
+.mid{font-size:5vh;font-weight:700;line-height:1.1}
+.meta{font-size:2.3vh;color:#9aa0a8}
+.bar{height:.9vh;background:#262a31;border-radius:.5vh;margin:1vh 0;overflow:hidden}
+.bar i{display:block;height:100%;background:#e9e9e6}
+.bar i.warn{background:#f0a43a}
+.bar i.crit{background:#ef5b5b}
+.gap{margin-top:1.4vh}
+.services{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap}
+.svc{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;background:#15181d;border-radius:1vh;padding:1.2vh 1.1vw;margin:0 .7vw 1.2vh 0;font-size:2.5vh}
+.svc .dot{width:1.8vh;height:1.8vh;border-radius:50%;margin-right:.8vw}
+.foot{display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;font-size:2.3vh;color:#9aa0a8;padding-top:1.4vh;border-top:1px solid #22262c}
+.bad{color:#ef5b5b}
+.off{background:#4a4f57}.ok{background:#4ccf7a}.warnbg{background:#f0a43a}.badbg{background:#ef5b5b}
+</style></head>
+<body><div class="wrap">
+ <div class="top">
+  <div class="left"><div class="clock" id="clock">--:--</div><div class="date" id="date"></div></div>
+  <div class="status"><div class="pill"><span class="dot warnbg" id="sdot"></span><span id="stext">Connecting</span></div><div class="sub" id="ssub"></div></div>
+ </div>
+ <div class="tiles">
+  <div class="tile"><div class="lbl">CPU</div><div class="big" id="cpu">-</div><div class="bar"><i id="cpub"></i></div><div class="meta" id="cpum"></div></div>
+  <div class="tile"><div class="lbl">Memory</div><div class="big" id="mem">-</div><div class="bar"><i id="memb"></i></div><div class="meta" id="memm"></div></div>
+  <div class="tile" id="disktile"></div>
+  <div class="tile last"><div class="lbl">Network</div><div class="mid" id="rx">-</div><div class="mid" id="tx">-</div><div class="meta gap" id="ts"></div></div>
+ </div>
+ <div class="services" id="svcs"></div>
+ <div class="foot"><span id="f1"></span><span>Home server &middot; please keep it plugged in and switched on</span></div>
+</div>
+<script>
+var offset = 0, lastOk = 0;
+var DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+function el(id) { return document.getElementById(id); }
+function pad(n) { return n < 10 ? "0" + n : "" + n; }
+function gb(b) { return (b / 1073741824).toFixed(1); }
+function size(b) { return b >= 1e12 ? (b / 1099511627776).toFixed(2) + " TiB" : gb(b) + " GiB"; }
+function rate(bits) { return bits >= 1e6 ? (bits / 1e6).toFixed(1) + " <small>Mb/s</small>" : (bits / 1e3).toFixed(0) + " <small>kb/s</small>"; }
+function level(p) { return p >= 90 ? "crit" : (p >= 75 ? "warn" : ""); }
+function bar(id, p) { var e = el(id); e.style.width = Math.min(100, p).toFixed(0) + "%"; e.className = level(p); }
+function dur(s) {
+  var d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+  return d ? d + "d " + h + "h" : (h ? h + "h " + m + "m" : m + "m");
+}
+function tick() {
+  var d = new Date(new Date().getTime() + offset), h = d.getHours();
+  el("clock").innerHTML = ((h % 12) || 12) + ":" + pad(d.getMinutes()) + "<small>" + (h < 12 ? "AM" : "PM") + "</small>";
+  el("date").innerHTML = DAYS[d.getDay()] + ", " + MONTHS[d.getMonth()] + " " + d.getDate();
+  if (lastOk && new Date().getTime() - lastOk > 30000) {
+    el("sdot").className = "dot badbg"; el("stext").innerHTML = "No data"; el("ssub").innerHTML = "Can't reach the homelab";
+  }
+}
+function render(j) {
+  offset = j.time * 1000 - new Date().getTime(); lastOk = new Date().getTime();
+  var n = j.issues.length, i, h = "", s = "";
+  el("sdot").className = "dot " + (n ? "badbg" : "ok");
+  el("stext").innerHTML = n ? (n == 1 ? j.issues[0] : n + " issues") : "All good";
+  el("ssub").innerHTML = "up " + dur(j.uptime) + " &middot; " + j.containers_running + " of " + j.containers_total + " containers";
+  el("cpu").innerHTML = j.cpu.toFixed(0) + "<small>%</small>"; bar("cpub", j.cpu);
+  el("cpum").innerHTML = (j.temp !== null ? j.temp.toFixed(0) + " &deg;C &middot; " : "") + "load " + j.load.toFixed(1);
+  var mp = 100 * j.mem_used / j.mem_total;
+  el("mem").innerHTML = mp.toFixed(0) + "<small>%</small>"; bar("memb", mp);
+  el("memm").innerHTML = gb(j.mem_used) + " of " + gb(j.mem_total) + " GiB";
+  for (i = 0; i < j.disks.length; i++) {
+    var d = j.disks[i], cls = i ? ' class="gap"' : "";
+    if (!d.mounted) { h += "<div" + cls + '><div class="lbl">' + d.label + '</div><div class="mid bad">not mounted</div></div>'; continue; }
+    var p = 100 * d.used / d.total;
+    h += "<div" + cls + '><div class="lbl">' + d.label + '</div><div class="mid">' + p.toFixed(0) + "<small>%</small></div>" +
+         '<div class="bar"><i class="' + level(p) + '" style="width:' + Math.min(100, p).toFixed(0) + '%"></i></div>' +
+         '<div class="meta">' + size(d.used) + " of " + size(d.total) + "</div></div>";
+  }
+  el("disktile").innerHTML = h;
+  el("rx").innerHTML = "&darr; " + rate(j.rx); el("tx").innerHTML = "&uarr; " + rate(j.tx);
+  el("ts").innerHTML = j.tailscale.online ? "Tailscale " + j.tailscale.ip : '<span class="bad">Tailscale offline</span>';
+  for (i = 0; i < j.services.length; i++) {
+    var v = j.services[i], c = v.status == "up" ? "ok" : (v.status == "starting" ? "warnbg" : "badbg");
+    s += '<div class="svc"><span class="dot ' + c + '"></span>' + v.label + "</div>";
+  }
+  var p = j.printer;
+  if (p) {
+    var pc = "ok", pt = "Printer";
+    if (p.state == "stopped") { pc = "badbg"; pt = "Printer stopped"; }
+    else if (!p.usb) { pc = "off"; pt = p.jobs ? "Printer off &middot; " + p.jobs + " waiting" : "Printer off"; }
+    else if (p.state == "printing" || p.jobs) { pc = "warnbg"; pt = "Printing" + (p.jobs > 1 ? " (" + p.jobs + ")" : ""); }
+    s += '<div class="svc"><span class="dot ' + pc + '"></span>' + pt + "</div>";
+  }
+  el("svcs").innerHTML = s;
+  el("f1").innerHTML = (j.battery ? "Battery " + j.battery.pct + "% " + j.battery.status.toLowerCase() + " &middot; " : "") + "Last backup " + j.last_backup;
+}
+function poll() {
+  var x = new XMLHttpRequest();
+  x.open("GET", "/api?t=" + new Date().getTime(), true);
+  x.onreadystatechange = function () {
+    if (x.readyState == 4 && x.status == 200) { try { render(JSON.parse(x.responseText)); } catch (e) {} }
+  };
+  x.send();
+}
+tick(); poll(); setInterval(tick, 1000); setInterval(poll, 5000);
+</script></body></html>

@@ -1,0 +1,15 @@
+#!/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# Nightly archive of the homelab's setup into 03_Critical (03_Critical is then versioned by restic at 3:30)
+mountpoint -q /srv/media || { echo "$(date) 2 TB not mounted, skipped"; exit 1; }
+DEST=/srv/media/03_Critical/homelab-config
+mkdir -p "$DEST"
+OUT="$DEST/homelab-$(date +%a).tar.gz"
+tar --create --gzip --file "$OUT.tmp" --warning=no-file-changed \
+  --exclude=/opt/immich/postgres --exclude=/opt/jellyfin/cache --exclude=/opt/pitwall/data \
+  /opt /etc/fstab /etc/samba/smb.conf /etc/default/grub /etc/systemd/system \
+  /etc/udev/rules.d /etc/systemd/logind.conf.d /etc/systemd/resolved.conf.d \
+  /usr/local/bin /var/spool/cron/crontabs \
+  /etc/cups/cupsd.conf /etc/cups/printers.conf /etc/cups/ppd 2>/dev/null
+rc=$?
+[ $rc -le 1 ] && mv "$OUT.tmp" "$OUT" && echo "$(date) ok $(du -h "$OUT" | cut -f1)" || { echo "$(date) tar failed ($rc)"; exit 1; }

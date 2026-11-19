@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homelab · Dashboard</title>
+<style>
+@font-face{font-family:"B612";src:url(/fonts/B612-Regular.ttf)}
+@font-face{font-family:"B612";font-weight:700;src:url(/fonts/B612-Bold.ttf)}
+@font-face{font-family:"B612 Mono";src:url(/fonts/B612Mono-Regular.ttf)}
+html,body{margin:0;height:100%;background:#3d4852;color:#fff;font-family:"B612","DejaVu Sans",sans-serif;overflow:hidden;-webkit-user-select:none;user-select:none}
+.wrap{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;height:100%;box-sizing:border-box}
+.row{display:-webkit-flex;display:flex}
+.grow{-webkit-flex:1;flex:1;min-width:0}
+.g{color:#13e013}.a{color:#ff9f00}.c{color:#2bd6ff}.w{color:#fff}.r{color:#ff1d1d}
+/* glareshield */
+.gs{background:linear-gradient(#1b1e21,#262a2e);height:12vh;padding:1.2vh 1.6vw;box-sizing:border-box;-webkit-align-items:center;align-items:center;box-shadow:0 .5vh 1vh rgba(0,0,0,.5);position:relative;z-index:1}
+.mb{width:8.6vw;height:100%;margin-left:.8vw;background:#0d0e0f;border:.35vh solid #45494e;border-radius:.3vh;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-justify-content:center;justify-content:center;text-align:center;font-weight:700;font-size:2.2vh;line-height:1.1;letter-spacing:.06em;cursor:pointer;box-shadow:inset 0 0 1.2vh #000;box-sizing:border-box}
+.mb.w{color:#2a0c0c}.mb.c{color:#2a1d07}
+.mb.w.lit{color:#ff1d1d;text-shadow:0 0 1vh rgba(255,29,29,.9);background:#1a0505}
+.mb.c.lit{color:#ff9f00;text-shadow:0 0 1vh rgba(255,159,0,.9);background:#1a1103}
+.flash{-webkit-animation:fl .8s steps(1) infinite;animation:fl .8s steps(1) infinite}
+@-webkit-keyframes fl{50%{color:#2a0c0c;text-shadow:none;background:#0d0e0f}}
+@keyframes fl{50%{color:#2a0c0c;text-shadow:none;background:#0d0e0f}}
+.plate{margin-left:auto;font-size:1.8vh;letter-spacing:.3em;color:#7f888f}
+.gclk{height:100%;background:#000;border:.4vh solid #121416;box-shadow:0 0 0 .3vh #4a5058;border-radius:.4vh;padding:0 1.2vw;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;box-sizing:border-box}
+.gclk .t{font-size:6.6vh;line-height:1;letter-spacing:.02em}
+.gclk .t span{font-size:3.4vh;margin:0 .4vw}
+.gclk .t small{font-size:2.8vh;margin-left:.4vw}
+.gclk .d{margin-left:1.2vw;font-size:2.1vh;line-height:1.4;letter-spacing:.06em}
+/* main instrument panel */
+.mp{background:#4a5560;padding:1.4vh 1.6vw;-webkit-flex:1;flex:1;min-height:0;box-sizing:border-box}
+.du{background:#000;border:.6vh solid #121416;box-shadow:0 0 0 .35vh #59636c,inset 0 0 2vh rgba(255,255,255,.03);border-radius:.5vh;box-sizing:border-box;position:relative;overflow:hidden}
+/* E/WD */
+.ewd{-webkit-flex:1.62;flex:1.62;margin-right:1.6vw;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
+.engs{-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;padding:.8vh 1vw .4vh;min-height:0}
+.sec{-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;min-height:0}
+.sec .cells{-webkit-flex:1;flex:1;-webkit-align-items:center;align-items:center}
+.sec + .sec{border-top:1px solid #4d4d4d;margin-top:.6vh;padding-top:.6vh}
+.cells{display:-webkit-flex;display:flex;-webkit-justify-content:space-around;justify-content:space-around}
+.cell{text-align:center;-webkit-flex:1;flex:1}
+.cell svg{display:block;margin:0 auto}
+.cell svg{height:14.5vh}
+.fr{font-size:2vh;margin-top:.2vh}
+.nums{display:-webkit-flex;display:flex;-webkit-justify-content:space-around;justify-content:space-around;font-size:2.3vh;margin-top:.2vh}
+.nums .v{font-size:3.2vh}
+.ecol{width:50%;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center}
+.ccol{width:18%;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;text-align:center}
+.side{-webkit-flex:1;flex:1;border-left:1px solid #fff;margin-left:1vw;padding-left:1vw;font-size:2.1vh;line-height:1.7}
+.hd{font-size:2.1vh;letter-spacing:.12em;text-decoration:underline;margin-bottom:.3vh}
+.gl{font-size:2.3vh;margin-top:.2vh}
+.gl .s{font-size:1.9vh;color:#2bd6ff}
+.n1{height:19.5vh}.egt{height:14.5vh}
+.n1 svg,.egt svg{height:100%;display:block}
+.lab{height:22.5vh;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-justify-content:center;justify-content:center;font-size:2.1vh;line-height:1.3}
+.lab2{height:16vh}
+.dig{height:4.6vh;font-size:3.2vh !important;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;font-size:3.6vh}
+.dig small{font-size:2.4vh}
+.lab .s,.dig .s{font-size:1.7vh;color:#2bd6ff}
+.msgs{height:14.5vh;border-top:1px solid #fff;display:-webkit-flex;display:flex;padding:.8vh 1vw;font-size:2.15vh;line-height:1.32;box-sizing:border-box}
+.msgs .l{white-space:nowrap;overflow:hidden}
+.msgs .left{-webkit-flex:1;flex:1;overflow:hidden}
+.msgs .right{width:38%;border-left:1px solid #fff;padding-left:1vw;overflow:hidden}
+.u{text-decoration:underline}
+/* SD */
+.sd{-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
+.page{-webkit-flex:1;flex:1;padding:1.2vh 1.2vw;font-size:2.3vh;line-height:1.42;min-height:0}
+.ttl{font-size:2.4vh;text-decoration:underline;margin-bottom:.6vh}
+.kv{display:-webkit-flex;display:flex;-webkit-align-items:baseline;align-items:baseline}
+.kv .k{width:6.6vw;color:#fff}
+.kv .v{font-size:3.2vh}
+.rmp{margin:1vh 0 1.2vh;background:#39424b;border-radius:.4vh;padding:.7vh .8vw;box-shadow:inset 0 0 0 .2vh #2a3138}
+.rmp .rl{font-size:1.5vh;color:#fff;letter-spacing:.1em;display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between}
+.rmp .win{background:#060606;border:.25vh solid #1b1e21;margin-top:.4vh;padding:.3vh .6vw;font-family:"B612 Mono","DejaVu Sans Mono",monospace;font-size:2.7vh;color:#ffa127;text-shadow:0 0 .8vh rgba(255,161,39,.65);text-align:right;white-space:nowrap}
+.rmp .win.off{color:#3a2a14;text-shadow:none}
+.strip{border-top:1px solid #fff;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:space-between;justify-content:space-between;padding:.8vh 1.2vw;font-size:2.1vh;line-height:1.35}
+.strip .clk{text-align:center;font-size:5.4vh;line-height:1}
+.strip .clk span{font-size:3vh;margin:0 .4vw}
+.strip .clk small{font-size:2.4vh;margin-left:.3vw}
+/* overhead */
+.ovh{background:#5d6c79;padding:1.2vh 1.6vw 1.4vh;box-shadow:inset 0 .4vh .8vh rgba(0,0,0,.35)}
+.ovh .pn{position:relative;height:1.4vh;margin:1vh 4% .8vh;border-top:1px solid #fff;border-left:1px solid #fff;border-right:1px solid #fff;text-align:center}
+.ovh .pn span{position:relative;top:-1.15vh;background:#5d6c79;padding:0 1vw;font-size:1.7vh;color:#fff;letter-spacing:.14em}
+.pbs{display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between}
+.pbw{width:9.3%;text-align:center}
+.pbl{font-size:1.6vh;color:#fff;letter-spacing:.04em;white-space:nowrap;overflow:hidden;margin-bottom:.5vh}
+.pb{width:8.4vh;height:8.4vh;margin:0 auto;background:#141618;border:.4vh solid #2a2e32;border-radius:.3vh;box-shadow:inset 0 0 1vh #000,0 .35vh 0 #46535e;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;font-weight:700;font-size:1.75vh;letter-spacing:.04em}
+.pb div{-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center}
+.pb .up{color:#2a2418;border-bottom:1px solid #22262a}.pb .lo{color:#23272a}
+.pb .up.on{color:#ff9f00;text-shadow:0 0 .9vh rgba(255,159,0,.9)}
+.pb .lo.on{color:#fff;text-shadow:0 0 .9vh rgba(255,255,255,.8)}
+.pb .lo.blue{color:#2bb5ff;text-shadow:0 0 .9vh rgba(43,181,255,.8)}
+.pbd{font-size:1.5vh;color:#eef1f3;margin-top:.5vh;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style></head>
+<body><div class="wrap">
+ <div class="row gs">
+  <div class="gclk"><div class="t g" id="clkx"></div><div class="d"><div class="w" id="datex"></div><div class="c">IST &middot; HOMELAB</div></div></div>
+  <div class="plate">HOME</div>
+  <div class="mb w" id="mw" onclick="ack('w')">MASTER<br>WARN</div>
+  <div class="mb c" id="mc" onclick="ack('c')">MASTER<br>CAUT</div>
+ </div>
+ <div class="row mp">
+  <div class="du ewd">
+   <div class="engs">
+    <div id="sys" class="sec"></div>
+    <div id="sto" class="sec"></div>
+   </div>
+   <div class="msgs"><div class="left" id="act"></div><div class="right" id="memo"></div></div>
+  </div>
+  <div class="du sd">
+   <div class="page" id="net"></div>
+   <div class="strip" id="strip"></div>
+  </div>
+ </div>
+ <div class="ovh"><div class="pn"><span>SERVICES</span></div><div class="pbs" id="pbs"></div></div>
+</div>
+<script>
+var THEME = "a320";
+var offset = 0, lastOk = 0, cauKey = "", ackC = "", ackW = false, stale = false, last = null;
+var DAYS = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+var MONTHS = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+var G = "#13e013", A = "#ff9f00", R = "#ff1d1d", W = "#ffffff";
+function el(id) { return document.getElementById(id); }
+function pad(n) { return n < 10 ? "0" + n : "" + n; }
+function gb(b) { return (b / 1073741824).toFixed(1); }
+function ago(h) { return h < 1 ? Math.round(h * 60) + "M AGO" : (h < 48 ? Math.round(h) + "H AGO" : Math.round(h / 24) + "D AGO"); }
+function dur(s) { var d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60); return d ? d + "D " + h + "H" : (h ? h + "H " + m + "M" : m + "M"); }
+function sp(c, t) { return '<span class="' + c + '">' + t + "</span>"; }
+function f(n) { return n.toFixed(2); }
+/* A320-style dial: arc from -150deg to +90deg; red band at the top end; boxed digital value */
+function P(r, a) { var t = a * Math.PI / 180; return [50 + r * Math.sin(t), 44 - r * Math.cos(t)]; }
+function ang(p) { return -150 + 240 * Math.max(0, Math.min(100, p)) / 100; }
+function arc(r, a0, a1, col, w) { var p0 = P(r, a0), p1 = P(r, a1); return '<path d="M' + f(p0[0]) + "," + f(p0[1]) + " A" + r + "," + r + " 0 " + (a1 - a0 > 180 ? 1 : 0) + " 1 " + f(p1[0]) + "," + f(p1[1]) + '" fill="none" stroke="' + col + '" stroke-width="' + w + '"/>'; }
+/* smooth needles: each dial eases towards its new value like a damped aircraft needle */
+var NS = {};
+function dial(key, p, fmt, amb, red, big) {
+  var s = '<svg viewBox="0 0 100 ' + (big ? 82 : 74) + '" font-family="B612,DejaVu Sans,sans-serif">' + arc(36, -150, ang(red), G, 1.8) + arc(36, ang(red), 90, R, 4.2), k;
+  for (k = 0; k <= 100; k += 10) {
+    var m = k % 50 == 0, p0 = P(36, ang(k)), p1 = P(m ? 30 : 32.5, ang(k));
+    s += '<line x1="' + f(p0[0]) + '" y1="' + f(p0[1]) + '" x2="' + f(p1[0]) + '" y2="' + f(p1[1]) + '" stroke="#fff" stroke-width="' + (m ? 1.5 : .9) + '"/>';
+  }
+  if (big) { var t5 = P(22, ang(50)), t10 = P(22, ang(100)); s += '<text x="' + f(t5[0]) + '" y="' + f(t5[1] + 3) + '" fill="#fff" font-size="9" text-anchor="middle">5</text><text x="' + f(t10[0] - 2) + '" y="' + f(t10[1] + 3) + '" fill="#fff" font-size="9" text-anchor="middle">10</text>'; }
+  var bx = big ? 50 : 52, by = big ? 54 : 50;
+  if (p === null) return s + '<text x="' + (bx + 20) + '" y="' + (by + 17) + '" fill="' + A + '" font-size="16" text-anchor="middle">XX</text></svg>';
+  var n = NS[key];
+  if (!n) n = NS[key] = { cur: p };
+  n.tgt = p; n.fmt = fmt; n.amb = amb; n.red = red;
+  var v = n.cur, col = v >= red ? R : (v >= amb ? A : G);
+  s += '<g id="nd-' + key + '" transform="rotate(' + f(ang(v)) + ' 50 44)"><path id="np-' + key + '" d="M50,44 L50,5" stroke="' + col + '" stroke-width="3" stroke-linecap="round"/></g>';
+  s += '<rect x="' + bx + '" y="' + by + '" width="42" height="22" fill="#000" stroke="#c8ccd0" stroke-width="1"/>';
+  return s + '<text id="nt-' + key + '" x="' + (bx + 39) + '" y="' + (by + 17.5) + '" fill="' + col + '" font-size="' + (big ? 17 : 15) + '" text-anchor="end">' + fmt(v) + "</text></svg>";
+}
+function frame() {
+  var k;
+  for (k in NS) {
+    var n = NS[k], d = n.tgt - n.cur;
+    if (d === 0) continue;
+    n.cur = Math.abs(d) < 0.05 ? n.tgt : n.cur + d * 0.07;
+    var g = el("nd-" + k), pth = el("np-" + k), t = el("nt-" + k);
+    if (!g) continue;
+    var col = n.cur >= n.red ? R : (n.cur >= n.amb ? A : G);
+    g.setAttribute("transform", "rotate(" + f(ang(n.cur)) + " 50 44)");
+    pth.setAttribute("stroke", col);
+    if (t) { t.textContent = n.fmt(n.cur); t.setAttribute("fill", col); }
+  }
+}
+function F1(v) { return v.toFixed(1); }
+function PCT(v) { return v.toFixed(0) + "%"; }
+/* ECAM */
+function ecam(m) {
+  var g;
+  if ((g = m.match(/^(.*) FAIL$/))) return [sp("a u", "SVC") + sp("a", " " + g[1] + " FAULT"), sp("c", "&nbsp;-CONTAINER..........CHECK")];
+  if ((g = m.match(/^(.*) DRIVE NOT MOUNTED$/))) return [sp("a u", "STOR") + sp("a", " " + g[1] + " DRV LOST"), sp("c", "&nbsp;-USB CABLE..........CHECK")];
+  if ((g = m.match(/^(.*) DRIVE ALMOST FULL$/))) return [sp("a u", "STOR") + sp("a", " " + g[1] + " DRV FULL"), sp("c", "&nbsp;-FILES..............PURGE")];
+  if (m == "BACKUP OVERDUE") return [sp("a u", "BKUP") + sp("a", " NIGHTLY OVERDUE"), sp("c", "&nbsp;-BACKUP LOG.........CHECK")];
+  if (m == "TAILSCALE OFFLINE") return [sp("a u", "NET") + sp("a", " TAILSCALE FAULT"), sp("c", "&nbsp;-TAILSCALED.......RESTART")];
+  if (m == "PRINTER STOPPED") return [sp("a u", "PRNT") + sp("a", " QUEUE STOPPED"), sp("c", "&nbsp;-CUPSENABLE...........RUN")];
+  if (m == "CPU TEMP HIGH") return [sp("a u", "SYS") + sp("a", " CPU OVHT"), sp("c", "&nbsp;-AIRFLOW............CHECK")];
+  return [sp("a", m)];
+}
+function messages(j) {
+  var act = [], memo = [], i, h = "";
+  if (stale) { act.push(sp("r u", "COMM") + sp("r", " HOMELAB LOST")); act.push(sp("c", "&nbsp;-POWER/NETWORK......CHECK")); }
+  if (j && !stale) {
+    for (i = 0; i < j.cautions.length; i++) act = act.concat(ecam(j.cautions[i]));
+    for (i = 0; i < j.advisories.length; i++) memo.push(sp("a", j.advisories[i]));
+    if (!j.cautions.length) memo.push(sp("g", "HOMELAB NORMAL"));
+    if (j.tailscale.online) memo.push(sp("g", "TAILSCALE ON"));
+    if (j.backup.ok && j.backup.age_h !== null) memo.push(sp("g", "BACKUP OK"));
+  }
+  for (i = 0; i < act.length && i < 4; i++) h += '<div class="l">' + act[i] + "</div>";
+  if (act.length > 4) h += '<div class="l g">&darr;</div>';
+  el("act").innerHTML = h;
+  h = "";
+  for (i = 0; i < memo.length && i < 4; i++) h += '<div class="l">' + memo[i] + "</div>";
+  el("memo").innerHTML = h;
+}
+function ack(which) { if (which == "c") ackC = cauKey; else ackW = true; lights(); }
+function lights() {
+  el("mc").className = "mb c" + (cauKey !== "" && ackC !== cauKey && !stale ? " lit" : "");
+  el("mw").className = "mb w" + (stale && !ackW ? " lit flash" : "");
+}
+function clockHtml() {
+  var d = new Date(new Date().getTime() + offset);
+  return pad(d.getHours()) + "<span>H</span>" + pad(d.getMinutes()) + "<small>" + pad(d.getSeconds()) + "</small>";
+}
+function tick() {
+  var c = el("clkx");
+  if (c) {
+    var d = new Date(new Date().getTime() + offset);
+    c.innerHTML = clockHtml();
+    el("datex").innerHTML = DAYS[d.getDay()] + " " + pad(d.getDate()) + " " + MONTHS[d.getMonth()] + " " + d.getFullYear();
+  }
+  var s = lastOk && new Date().getTime() - lastOk > 30000;
+  if (s != stale) { stale = s; ackW = false; if (last) draw(last); messages(last); lights(); }
+}
+function draw(j) {
+  var X = stale, i;
+  var mp = 100 * j.mem_used / j.mem_total;
+  var nas = j.disks[0], bk = j.disks[1], ssd = j.disks[2];
+  function pct(d) { return d && d.mounted ? 100 * d.used / d.total : null; }
+  var np = pct(nas), bp = pct(bk), spc = pct(ssd);
+  var tf = 0;
+  for (i = 0; i < j.disks.length; i++) if (j.disks[i].mounted) tf += j.disks[i].total - j.disks[i].used;
+  function dg(v, cls, unit) { return '<div class="dig ' + (X || v === null ? "a" : cls) + '">' + (X || v === null ? "XX" : v + (unit ? "<small>" + unit + "</small>" : "")) + "</div>"; }
+  function gl(name, unit) { return '<div class="gl">' + name + (unit ? ' <span class="s">' + unit + "</span>" : "") + "</div>"; }
+  function size(b) { return b >= 1099511627776 ? (b / 1099511627776).toFixed(2) + " TB" : (b / 1073741824).toFixed(0) + " GB"; }
+  el("sys").innerHTML = '<div class="hd">SYSTEM</div><div class="cells">' +
+    '<div class="cell">' + gl("CPU", "%") + dial("cpu", X ? null : j.cpu, F1, 75, 90, true) +
+      '<div class="fr">TEMP ' + (X || j.temp === null ? sp("a", "XX") : sp(j.temp >= 80 ? "a" : "g", j.temp.toFixed(0)) + sp("c", "&deg;C")) + "&nbsp;&middot;&nbsp;LOAD " + (X ? sp("a", "XX") : sp(j.load >= 8 ? "a" : "g", j.load.toFixed(2))) + "</div></div>" +
+    '<div class="cell">' + gl("RAM", "%") + dial("ram", X ? null : mp, F1, 75, 90, true) +
+      '<div class="fr">' + (X ? sp("a", "XX") : sp("g", gb(j.mem_used)) + " OF " + sp("g", gb(j.mem_total)) + sp("c", " GB")) + "</div></div></div>";
+  var names = { NAS: "NAS &middot; 2 TB", BACKUP: "BACKUP &middot; 1 TB", SYSTEM: "SSD &middot; INTERNAL" };
+  var h2 = '<div class="hd">STORAGE</div><div class="cells">';
+  for (i = 0; i < j.disks.length; i++) {
+    var d = j.disks[i], p = d.mounted ? 100 * d.used / d.total : null;
+    h2 += '<div class="cell">' + gl(names[d.label] || d.label, "") + dial("d" + i, X || p === null ? null : p, PCT, 80, 90, true) +
+      '<div class="fr">' + (!d.mounted ? sp("a", "NOT MOUNTED") : (X ? sp("a", "XX") : sp("g", size(d.total - d.used)) + " FREE")) + "</div></div>";
+  }
+  el("sto").innerHTML = h2 + "</div>";
+  function rate(b) { return b >= 1e6 ? sp("g v", (b / 1e6).toFixed(1)) + sp("c", "&nbsp;MBPS") : sp("g v", (b / 1e3).toFixed(0)) + sp("c", "&nbsp;KBPS"); }
+  var st = j.speedtest;
+  el("net").innerHTML = '<div class="ttl">NET</div>' + (X ? '<div class="a">XX</div>' :
+    '<div class="kv"><span class="k">RX</span>' + rate(j.rx) + "</div>" +
+    '<div class="kv"><span class="k">TX</span>' + rate(j.tx) + "</div>" +
+    '<div class="rmp"><div class="rl"><span>TAILSCALE</span><span class="' + (j.tailscale.online ? "g" : "a") + '">' + (j.tailscale.online ? "ON" : "OFF") + '</span></div><div class="win' + (j.tailscale.online ? "" : " off") + '">' + (j.tailscale.ip || "---.---.---.---") + "</div></div>" +
+    '<div class="ttl" style="margin-top:.4vh">SPEEDTEST</div>' +
+    (st ? '<div class="kv"><span class="k">DN/UP</span>' + sp("g v", st.down.toFixed(0) + "/" + st.up.toFixed(0)) + sp("c", "&nbsp;MBPS") + "</div>" +
+          '<div class="kv"><span class="k">PING</span>' + sp("g v", st.ping.toFixed(0)) + sp("c", "&nbsp;MS") + sp("w", "&nbsp;&middot;&nbsp;" + ago(st.age_h)) + "</div>" : '<div class="a">XX</div>') +
+    '<div class="ttl" style="margin-top:.8vh">BACKUP</div>' +
+    '<div class="kv"><span class="k">LAST</span>' + (j.backup.age_h === null ? sp("a v", "NEVER") : sp((j.backup.ok ? "g" : "a") + " v", ago(j.backup.age_h))) + "</div>");
+  var bt = j.battery;
+  el("strip").innerHTML =
+    "<div>BAT&nbsp;" + (bt ? sp(bt.status == "Discharging" ? "a" : "g", bt.pct) + sp("c", "&nbsp;%") : sp("a", "XX")) + "<br>" + (bt ? sp(bt.status == "Discharging" ? "a" : "w", bt.status.toUpperCase()) : "") + "</div>" +
+    "<div>UP&nbsp;" + (X ? sp("a", "XX") : sp("g", dur(j.uptime))) + "</div>" +
+    '<div style="text-align:right">CTNR&nbsp;' + (X ? sp("a", "XX") : sp(j.containers_running < j.containers_total ? "a" : "g", j.containers_running + "/" + j.containers_total)) + "</div>";
+  /* overhead pushbuttons: lights-out = normal */
+  var h = "";
+  function pb(label, up, lo, loCls, data) {
+    return '<div class="pbw"><div class="pbl">' + label + '</div><div class="pb"><div class="up' + (up ? " on" : "") + '">FAULT</div><div class="lo' + (loCls ? " " + loCls : "") + '">' + lo + '</div></div><div class="pbd">' + (data || "&nbsp;") + "</div></div>";
+  }
+  for (i = 0; i < j.services.length; i++) {
+    var v = j.services[i];
+    h += pb(v.label.toUpperCase(), v.status == "down", v.status == "starting" ? "ON" : "OFF", v.status == "starting" ? "blue" : "", v.status == "up" ? (v.info || "UP " + v.up) : (v.status == "down" ? "" : "STARTING"));
+  }
+  var pr = j.printer;
+  if (pr) {
+    var prOff = !pr.usb && pr.state != "stopped", busy = pr.usb && (pr.state == "printing" || pr.jobs);
+    h += pb("PRINTER", pr.state == "stopped", busy ? "ON" : "OFF", prOff ? "on" : (busy ? "blue" : ""), prOff ? (pr.jobs ? pr.jobs + " WAITING" : "SWITCHED OFF") : (busy ? "PRINTING" : "READY"));
+  }
+  var b = j.backup;
+  h += pb("BACKUP", !b.ok, "OFF", "", b.age_h === null ? "NEVER" : ago(b.age_h));
+  el("pbs").innerHTML = h;
+  tick();
+}
+function render(j) {
+  if (j.theme && j.theme != THEME) { location.reload(); return; }
+  offset = j.time * 1000 - new Date().getTime(); lastOk = new Date().getTime(); last = j;
+  if (stale) stale = false;
+  cauKey = j.cautions.join("|"); if (cauKey === "") ackC = "";
+  draw(j); messages(j); lights();
+}
+function poll() {
+  var x = new XMLHttpRequest();
+  x.open("GET", "/api?t=" + new Date().getTime(), true);
+  x.onreadystatechange = function () { if (x.readyState == 4 && x.status == 200) { try { render(JSON.parse(x.responseText)); } catch (e) {} } };
+  x.send();
+}
+tick(); poll(); setInterval(tick, 1000); setInterval(poll, 5000); setInterval(frame, 40);
+setTimeout(function () { if (!lastOk) lastOk = 1; }, 30000);
+</script></body></html>

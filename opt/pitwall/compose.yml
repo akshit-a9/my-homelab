@@ -1,0 +1,59 @@
+services:
+  ts-pitwall:
+    image: tailscale/tailscale:latest
+    hostname: pitwall
+    environment:
+      TS_AUTHKEY: ${TS_AUTHKEY}
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "false"
+      TS_ACCEPT_DNS: "false"
+    volumes:
+      - ./ts-state:/var/lib/tailscale
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add: [NET_ADMIN]
+    restart: unless-stopped
+
+  pitwall:
+    build:
+      context: ./src
+      dockerfile_inline: |
+        FROM python:3.12-slim
+        WORKDIR /app
+        COPY . .
+        CMD ["python", "-m", "f1live"]
+    volumes:
+      - ./f1live.toml:/app/f1live.toml:ro
+      - ./data:/app/data
+    network_mode: service:ts-pitwall
+    depends_on: [ts-pitwall]
+    restart: unless-stopped
+    labels:
+      autoheal: "true"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8020', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  ops:
+    image: python:3.12-alpine
+    user: "1000:1000"
+    network_mode: service:ts-pitwall
+    depends_on: [ts-pitwall]
+    command: python /app/app.py
+    environment:
+      OPS_TOKEN: ${OPS_TOKEN}
+    volumes:
+      - ./ops:/app:ro
+      - ./trigger:/trigger
+    restart: unless-stopped
+
+  autoheal:
+    image: willfarrell/autoheal:latest
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: autoheal
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped

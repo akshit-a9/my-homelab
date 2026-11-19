@@ -1,0 +1,11 @@
+#!/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# Remount the 2 TB if it reappeared after a USB drop, then refresh the containers that use it
+mountpoint -q /srv/media && exit 0
+[ -e /dev/disk/by-label/Expansion ] || exit 0
+fsck.exfat -y /dev/disk/by-label/Expansion
+mount /srv/media || exit 1
+for d in /opt/immich /opt/jellyfin /opt/syncthing; do
+  [ -d "$d" ] && (cd "$d" && docker compose up -d --force-recreate)
+done
+logger "remount-media: 2 TB remounted, containers recreated"

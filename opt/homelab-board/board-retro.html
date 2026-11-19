@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homelab · Dashboard</title>
+<style>
+html,body{margin:0;height:100%;background:#0b0c0e;color:#e8e2d0;font-family:"Droid Sans Mono","DejaVu Sans Mono",Menlo,Consolas,monospace;overflow:hidden;-webkit-user-select:none;user-select:none}
+.wrap{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;height:100%;padding:2vh 2vw;box-sizing:border-box}
+.row{display:-webkit-flex;display:flex}
+.grow{-webkit-flex:1;flex:1;min-width:0}
+.panel{background:#131518;border:1px solid #2b2f36;border-radius:.8vh;padding:1.6vh 1.4vw;box-sizing:border-box;position:relative}
+.ptitle{font-size:1.9vh;letter-spacing:.35em;color:#7d8590;margin-bottom:1.2vh}
+.ptitle:before{content:"";display:inline-block;width:.9vh;height:.9vh;background:#7d8590;margin-right:.8vw;vertical-align:middle}
+.lbl{font-size:1.9vh;letter-spacing:.2em;color:#7d8590}
+.dim{color:#7d8590}
+.grn{color:#5fe08a}.amb{color:#ffb000}.red{color:#ff4b3e}.cyn{color:#4fd2ff}
+/* header */
+.top{-webkit-align-items:stretch;align-items:stretch;margin-bottom:1.6vh}
+.clockp{width:31vw;margin-right:1.4vw}
+.clock{font-size:10vh;font-weight:700;line-height:1;color:#ffd27a;letter-spacing:-.02em}
+.clock small{font-size:3vh;margin-left:.6vw;color:#a8915a}
+.date{font-size:2.4vh;letter-spacing:.15em;margin-top:.8vh}
+.eicas{margin-right:1.4vw;font-size:2.6vh;line-height:1.45;overflow:hidden}
+.eicas .msg{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mbtns{display:-webkit-flex;display:flex}
+.mbtn{width:12vw;height:100%;min-height:13vh;margin-left:1vw;border-radius:1.2vh;border:.5vh solid #26292e;box-sizing:border-box;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-justify-content:center;justify-content:center;text-align:center;font-weight:700;font-size:2.6vh;line-height:1.25;letter-spacing:.12em;box-shadow:inset 0 0 2vh rgba(0,0,0,.8);cursor:pointer}
+.mbtn.c{background:#241b08;color:#5c4614}
+.mbtn.w{background:#260c0a;color:#5e1d17}
+.mbtn.c.lit{background:#ffb000;color:#1d1300;box-shadow:0 0 3vh rgba(255,176,0,.55),inset 0 0 1.5vh rgba(255,255,255,.35)}
+.mbtn.w.lit{background:#ff3b30;color:#1f0402;box-shadow:0 0 3vh rgba(255,59,48,.6),inset 0 0 1.5vh rgba(255,255,255,.35)}
+.flash{-webkit-animation:fl 1s steps(1) infinite;animation:fl 1s steps(1) infinite}
+@-webkit-keyframes fl{50%{opacity:.25}}
+@keyframes fl{50%{opacity:.25}}
+/* gauges */
+.mid{-webkit-flex:1;flex:1;margin-bottom:1.6vh;min-height:0}
+.mid .panel{margin-right:1.4vw;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-justify-content:space-around;justify-content:space-around}
+.mid .ptitle{margin-bottom:0}
+.mid .panel.last{margin-right:0}
+.g{margin-bottom:1.6vh}
+.gh{display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;-webkit-align-items:baseline;align-items:baseline}
+.gv{font-size:4.2vh;font-weight:700}
+.gv small{font-size:2.2vh;color:#a29c8c;font-weight:400}
+.tape{height:2vh;background:#0a0b0d;border:1px solid #34383f;margin:.7vh 0 .5vh;position:relative;overflow:hidden}
+.tape i{display:block;height:100%;background:#5fe08a;-webkit-transition:width 1.5s ease-out;transition:width 1.5s ease-out}
+.tape i.amb{background:#ffb000}.tape i.red{background:#ff4b3e}
+.tape b{position:absolute;left:0;top:0;right:0;bottom:0;background:repeating-linear-gradient(90deg,transparent 0,transparent 9.6%,#0a0b0d 9.6%,#0a0b0d 10%)}
+.gm{font-size:1.9vh;color:#a29c8c}
+.big{font-size:5.4vh;font-weight:700;line-height:1.15}
+.big small{font-size:2.4vh;color:#a29c8c;font-weight:400}
+.sep{border-top:1px dashed #2b2f36;margin:1.4vh 0}
+/* annunciators */
+.ann{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap}
+.al{width:18.6%;margin:0 1.75% 1.2vh 0;border:1px solid #2d3a30;background:#0d1410;border-radius:.6vh;padding:1vh .6vw;box-sizing:border-box;text-align:center}
+.al:nth-child(5n){margin-right:0}
+.al .n{font-size:2.3vh;font-weight:700;letter-spacing:.12em;color:#5fe08a}
+.al .d{font-size:1.75vh;color:#a29c8c;margin-top:.4vh;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.al.cau{background:#ffb000;border-color:#ffb000}
+.al.cau .n,.al.cau .d{color:#1d1300}
+.al.adv{border-color:#235a6e;background:#0b1519}
+.al.adv .n{color:#4fd2ff}
+.al.off{border-color:#26292e;background:#101113}
+.al.off .n{color:#4c5159}
+.foot{font-size:1.9vh;color:#7d8590;letter-spacing:.08em;-webkit-justify-content:space-between;justify-content:space-between;padding-top:.6vh}
+.stale .gauges{opacity:.35}
+</style></head>
+<body><div class="wrap" id="wrap">
+ <div class="row top">
+  <div class="panel clockp"><div class="clock" id="clock">--:--</div><div class="date" id="date"></div><div class="lbl" style="margin-top:.6vh">HOMELAB &middot; HOME</div></div>
+  <div class="panel eicas grow"><div class="ptitle">MESSAGES</div><div id="msgs"><div class="msg dim">CONNECTING&hellip;</div></div></div>
+  <div class="mbtns">
+   <div class="mbtn w" id="mw" onclick="ack('w')">MASTER<br>WARNING</div>
+   <div class="mbtn c" id="mc" onclick="ack('c')">MASTER<br>CAUTION</div>
+  </div>
+ </div>
+ <div class="gauges row mid" style="display:-webkit-flex;display:flex">
+  <div class="panel grow">
+   <div class="ptitle">SYSTEM</div>
+   <div class="g"><div class="gh"><span class="lbl">CPU</span><span class="gv" id="cpu">-</span></div><div class="tape"><i id="cpub"></i><b></b></div><div class="gm" id="cpum"></div></div>
+   <div class="g"><div class="gh"><span class="lbl">MEMORY</span><span class="gv" id="mem">-</span></div><div class="tape"><i id="memb"></i><b></b></div><div class="gm" id="memm"></div></div>
+  </div>
+  <div class="panel grow" id="disks" style="-webkit-flex:1.35;flex:1.35"></div>
+  <div class="panel grow last">
+   <div class="ptitle">NETWORK</div>
+   <div><div class="big" id="rx">-</div><div class="big" id="tx">-</div><div class="gm" id="ts" style="margin-top:.8vh"></div></div>
+   <div class="sep" style="margin:0"></div>
+   <div><div class="lbl">LAST SPEEDTEST</div><div class="gv" id="st" style="margin-top:.4vh">-</div><div class="gm" id="stm"></div></div>
+  </div>
+ </div>
+ <div class="panel gauges" style="padding-bottom:.4vh"><div class="ptitle">ANNUNCIATORS</div><div class="ann" id="ann"></div></div>
+ <div class="row foot"><span id="f1"></span><span>HOME SERVER &middot; KEEP PLUGGED IN AND SWITCHED ON</span></div>
+</div>
+<script>
+var THEME = "retro";
+var offset = 0, lastOk = 0, cauKey = "", ackC = "", ackW = false, stale = false, last = null;
+var DAYS = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+var MONTHS = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+function el(id) { return document.getElementById(id); }
+function pad(n) { return n < 10 ? "0" + n : "" + n; }
+function gb(b) { return (b / 1073741824).toFixed(1); }
+function size(b) { return b >= 1099511627776 ? (b / 1099511627776).toFixed(2) + " TB" : (b / 1073741824).toFixed(0) + " GB"; }
+function rate(bits) { return bits >= 1e6 ? (bits / 1e6).toFixed(1) + "<small> MBPS</small>" : (bits / 1e3).toFixed(0) + "<small> KBPS</small>"; }
+function level(p) { return p >= 90 ? "red" : (p >= 75 ? "amb" : ""); }
+function tape(p) { return '<div class="tape"><i class="' + level(p) + '" style="width:' + Math.min(100, p).toFixed(0) + '%"></i><b></b></div>'; }
+function ago(h) { return h < 1 ? Math.round(h * 60) + "M AGO" : (h < 48 ? Math.round(h) + "H AGO" : Math.round(h / 24) + "D AGO"); }
+function dur(s) {
+  var d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+  return d ? d + "D " + h + "H" : (h ? h + "H " + m + "M" : m + "M");
+}
+function ack(which) {
+  if (which == "c") { ackC = cauKey; } else { ackW = true; }
+  lights();
+}
+function lights() {
+  var mc = el("mc"), mw = el("mw");
+  var cOn = cauKey !== "" && ackC !== cauKey;
+  mc.className = "mbtn c" + (cOn ? " lit flash" : "");
+  mw.className = "mbtn w" + (stale && !ackW ? " lit flash" : "");
+}
+function messages(j) {
+  var m = [], i, h = "";
+  if (stale) m.push(["red", "HOMELAB NO DATA"]);
+  if (j) {
+    for (i = 0; i < j.cautions.length; i++) m.push(["amb", j.cautions[i]]);
+    for (i = 0; i < j.advisories.length; i++) m.push(["cyn", j.advisories[i]]);
+  }
+  for (i = 0; i < m.length && i < (m.length > 3 ? 2 : 3); i++) h += '<div class="msg ' + m[i][0] + '">' + m[i][1] + "</div>";
+  if (m.length > 3) h += '<div class="msg dim">+' + (m.length - 2) + " MORE</div>";
+  if (!h) h = '<div class="msg grn">ALL SYSTEMS NORMAL</div>';
+  el("msgs").innerHTML = h;
+}
+function tick() {
+  var d = new Date(new Date().getTime() + offset), h = d.getHours();
+  el("clock").innerHTML = ((h % 12) || 12) + ":" + pad(d.getMinutes()) + "<small>" + (h < 12 ? "AM" : "PM") + "</small>";
+  el("date").innerHTML = DAYS[d.getDay()] + " " + pad(d.getDate()) + " " + MONTHS[d.getMonth()] + " " + d.getFullYear();
+  var s = lastOk && new Date().getTime() - lastOk > 30000;
+  if (s != stale) {
+    stale = s; ackW = false;
+    el("wrap").className = "wrap" + (stale ? " stale" : "");
+    messages(last); lights();
+  }
+}
+function render(j) {
+  if (j.theme && j.theme != THEME) { location.reload(); return; }
+  offset = j.time * 1000 - new Date().getTime(); lastOk = new Date().getTime(); last = j;
+  if (stale) { stale = false; el("wrap").className = "wrap"; }
+  cauKey = j.cautions.join("|");
+  if (cauKey === "") ackC = "";
+  messages(j); lights();
+  el("cpu").innerHTML = j.cpu.toFixed(0) + "<small>%</small>";
+  el("cpub").style.width = Math.min(100, j.cpu).toFixed(0) + "%"; el("cpub").className = level(j.cpu);
+  el("cpum").innerHTML = (j.temp !== null ? '<span class="' + (j.temp >= 85 ? "red" : (j.temp >= 75 ? "amb" : "")) + '">' + j.temp.toFixed(0) + "&deg;C</span> &middot; " : "") + "LOAD " + j.load.toFixed(2);
+  var mp = 100 * j.mem_used / j.mem_total;
+  el("mem").innerHTML = gb(j.mem_used) + "<small> / " + gb(j.mem_total) + " GB</small>";
+  el("memb").style.width = mp.toFixed(0) + "%"; el("memb").className = level(mp);
+  el("memm").innerHTML = gb(j.mem_total - j.mem_used) + " GB FREE";
+  var h = "", i;
+  for (i = 0; i < j.disks.length; i++) {
+    var d = j.disks[i];
+    h += '<div class="g"><div class="gh"><span><span class="lbl" style="color:#e8e2d0">' + d.label + '</span> <span class="lbl">' + d.sub + "</span></span>";
+    if (!d.mounted) { h += '<span class="gv red" style="font-size:2.6vh">NOT MOUNTED</span></div>' + tape(0) + '<div class="gm red">CHECK THE USB CABLE</div></div>'; continue; }
+    var p = 100 * d.used / d.total;
+    h += '<span class="gv ' + level(p) + '" style="font-size:3vh">' + p.toFixed(0) + "<small>%</small></span></div>" + tape(p) +
+         '<div class="gm">' + size(d.used) + " USED OF " + size(d.total) + " &middot; " + size(d.total - d.used) + " FREE</div></div>";
+  }
+  el("disks").innerHTML = '<div class="ptitle">STORAGE</div>' + h;
+  el("rx").innerHTML = '<span class="dim">&darr;</span> ' + rate(j.rx);
+  el("tx").innerHTML = '<span class="dim">&uarr;</span> ' + rate(j.tx);
+  el("ts").innerHTML = j.tailscale.online ? 'TAILSCALE <span class="grn">ONLINE</span> &middot; ' + j.tailscale.ip : '<span class="amb">TAILSCALE OFFLINE</span>';
+  var st = j.speedtest;
+  if (st) {
+    el("st").innerHTML = st.down.toFixed(0) + '<small>&darr;</small> ' + st.up.toFixed(0) + "<small>&uarr; MBPS</small>";
+    el("stm").innerHTML = "PING " + st.ping.toFixed(0) + " MS" + (st.age_h !== null ? " &middot; " + ago(st.age_h) : "");
+  } else { el("st").innerHTML = '<span class="dim">NO DATA</span>'; el("stm").innerHTML = ""; }
+  var a = "";
+  for (i = 0; i < j.services.length; i++) {
+    var v = j.services[i], cls = v.status == "up" ? "" : (v.status == "starting" ? " adv" : " cau");
+    var sub = v.status == "down" ? "FAIL" : (v.status == "starting" ? "STARTING" : (v.info || ("UP " + v.up)));
+    a += '<div class="al' + cls + '"><div class="n">' + v.label.toUpperCase() + '</div><div class="d">' + sub + "</div></div>";
+  }
+  var pr = j.printer, pc = "", pt = "READY";
+  if (pr) {
+    if (pr.state == "stopped") { pc = " cau"; pt = "STOPPED"; }
+    else if (!pr.usb) { pc = " off"; pt = pr.jobs ? "OFF &middot; " + pr.jobs + " WAITING" : "OFF"; }
+    else if (pr.state == "printing" || pr.jobs) { pc = " adv"; pt = "PRINTING" + (pr.jobs > 1 ? " (" + pr.jobs + ")" : ""); }
+    a += '<div class="al' + pc + '"><div class="n">PRINTER</div><div class="d">' + pt + "</div></div>";
+  }
+  var b = j.backup;
+  a += '<div class="al' + (b.ok ? "" : " cau") + '"><div class="n">BACKUP</div><div class="d">' + (b.age_h === null ? "NEVER" : (b.ok ? "" : "OVERDUE &middot; ") + ago(b.age_h)) + "</div></div>";
+  el("ann").innerHTML = a;
+  var bt = j.battery;
+  el("f1").innerHTML = (bt ? "BATTERY " + bt.pct + "% " + bt.status.toUpperCase() + " &middot; " : "") + "UP " + dur(j.uptime) + " &middot; " + j.containers_running + "/" + j.containers_total + " CONTAINERS";
+}
+function poll() {
+  var x = new XMLHttpRequest();
+  x.open("GET", "/api?t=" + new Date().getTime(), true);
+  x.onreadystatechange = function () {
+    if (x.readyState == 4 && x.status == 200) { try { render(JSON.parse(x.responseText)); } catch (e) {} }
+  };
+  x.send();
+}
+tick(); poll(); setInterval(tick, 1000); setInterval(poll, 5000);
+setTimeout(function () { if (!lastOk) { lastOk = 1; } }, 30000);
+</script></body></html>

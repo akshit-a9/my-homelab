@@ -1,0 +1,5 @@
+# Keep LF everywhere: these files are copied onto a Linux box as-is.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ppd text eol=lf

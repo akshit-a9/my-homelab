@@ -1,0 +1,7 @@
+# Units masked on the homelab (symlinked to /dev/null). Re-create with: sudo systemctl mask <unit>
+getty@tty1.service
+hibernate.target
+hybrid-sleep.target
+ipp-usb.service
+sleep.target
+suspend.target

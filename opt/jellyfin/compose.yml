@@ -1,0 +1,14 @@
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    user: 1000:1000
+    group_add: ["${RENDER_GID}"]
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - ./config:/config
+      - ./cache:/cache
+      - /srv/media/04_Jellyfin:/media:ro
+    ports:
+      - "8096:8096"
+    restart: unless-stopped

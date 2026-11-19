@@ -1,0 +1,4 @@
+[Service]
+Type=oneshot
+User=akshit
+ExecStart=/opt/pitwall/ops.sh

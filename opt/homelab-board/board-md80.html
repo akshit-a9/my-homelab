@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homelab · Dashboard</title>
+<style>
+@font-face{font-family:"B612";src:url(/fonts/B612-Regular.ttf)}
+@font-face{font-family:"B612";font-weight:700;src:url(/fonts/B612-Bold.ttf)}
+@font-face{font-family:"B612 Mono";src:url(/fonts/B612Mono-Regular.ttf)}
+html,body{margin:0;height:100%;background:#17181a;color:#eceae4;font-family:"B612","DejaVu Sans",sans-serif;overflow:hidden;-webkit-user-select:none;user-select:none}
+.wrap{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;height:100%;padding:1.4vh 1.2vw;box-sizing:border-box}
+.row{display:-webkit-flex;display:flex}
+.grow{-webkit-flex:1;flex:1;min-width:0}
+.pnl{background:#2b2d30;border-radius:.6vh;box-shadow:inset 0 0 0 .25vh #3b3e42,0 .3vh .8vh rgba(0,0,0,.6);box-sizing:border-box;position:relative}
+.inst{width:24vh;height:24vh;-webkit-flex:none;flex:none}
+.inst svg{width:100%;height:100%;display:block}
+.top{height:24vh;margin-bottom:1vh}
+.gap{width:.9vw;-webkit-flex:none;flex:none}
+/* teleprinter */
+.tp{padding:1.2vh 1vw;background:#202124}
+.paper{height:100%;background:#efe7d2;box-shadow:inset 0 1.6vh 1.6vh -1vh rgba(0,0,0,.4);padding:.4vh 3vw;box-sizing:border-box;position:relative;font-family:"B612 Mono","DejaVu Sans Mono",monospace;color:#2b2824;font-size:2.15vh;line-height:1.42;overflow:hidden;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-justify-content:flex-end;justify-content:flex-end}
+.paper:before,.paper:after{content:"";position:absolute;top:0;bottom:0;width:1.3vw;background:radial-gradient(circle,#202124 0,#202124 .45vh,transparent .55vh) 0 0/1.3vw 2.2vh repeat-y}
+.paper:before{left:.7vw}.paper:after{right:.7vw}
+.ln{white-space:nowrap;overflow:hidden}
+.ln.red{color:#a3221a}.ln.old{opacity:.5}
+/* master lights */
+.lamp{width:11.5vw;height:100%;border-radius:.6vh;border:.6vh solid #101112;box-shadow:inset 0 0 0 .2vh #4a4d52;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-justify-content:center;justify-content:center;text-align:center;font-weight:700;font-size:2.5vh;line-height:1.25;letter-spacing:.08em;cursor:pointer;box-sizing:border-box}
+.lamp.w{background:#2a100e;color:#4f221e}.lamp.c{background:#2a210a;color:#55441c}
+.lamp.w.lit{background:radial-gradient(ellipse at center,#ff9a86 0,#e2321f 55%,#9e180d 100%);color:#2a0402;box-shadow:inset 0 0 0 .2vh #4a4d52,0 0 3vh rgba(255,80,50,.55)}
+.lamp.c.lit{background:radial-gradient(ellipse at center,#ffeab0 0,#ffb52e 55%,#c97a00 100%);color:#3a2400;box-shadow:inset 0 0 0 .2vh #4a4d52,0 0 3vh rgba(255,180,50,.55)}
+.flash{-webkit-animation:fl 1s steps(1) infinite;animation:fl 1s steps(1) infinite}
+@-webkit-keyframes fl{50%{background:#2a100e;color:#4f221e;box-shadow:inset 0 0 0 .2vh #4a4d52}}
+@keyframes fl{50%{background:#2a100e;color:#4f221e;box-shadow:inset 0 0 0 .2vh #4a4d52}}
+/* instrument block */
+.mid{margin-bottom:1vh}
+.irow{display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between}
+.irow + .irow{margin-top:1vh}
+.irow .inst{margin-right:.7vw}.irow .inst:last-child{margin-right:0}
+.ipanel{padding:1.2vh .9vw;-webkit-flex:none;flex:none}
+/* radio stack */
+.rad{margin-left:1vw;padding:1.2vh .9vw;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-justify-content:space-between;justify-content:space-between}
+.rh{background:#1d1e21;border-radius:.4vh;box-shadow:inset 0 0 0 .2vh #3c3f43;padding:.9vh .8vw}
+.rl{font-size:1.65vh;letter-spacing:.14em;color:#d6d2c7;display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between}
+.rl .s{color:#9f9b90}
+.odo{display:inline-block;margin-top:.5vh;white-space:nowrap;border:.25vh solid #000;box-shadow:0 0 0 .15vh #55585c}
+.odo i{display:inline-block;font-style:normal;font-family:"B612 Mono","DejaVu Sans Mono",monospace;font-size:3vh;width:1.6vw;text-align:center;color:#f4f1e8;background:linear-gradient(#000,#2e2e2e 20%,#151515 50%,#2e2e2e 80%,#000);border-right:1px solid #000;line-height:1.3}
+.odo i.dot{width:.6vw;background:#0a0a0a}
+.odo.sm i{font-size:2.4vh;width:1.3vw}
+.odo.sm i.dot{width:.5vw}
+.u{font-size:1.6vh;color:#9f9b90;letter-spacing:.1em;margin:0 .5vw}
+.flag{display:inline-block;width:1.3vh;height:1.3vh;border-radius:50%;margin-left:.4vw;vertical-align:-.1vh}
+.flag.on{background:radial-gradient(circle at 40% 40%,#e2ffc8,#4fa82b)}
+.flag.off{background:radial-gradient(circle at 40% 40%,#ffe0a0,#d98a00)}
+/* annunciator lenses */
+.annp{padding:1.2vh .9vw;-webkit-flex:1;flex:1;display:-webkit-flex;display:flex}
+.ann{-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;-webkit-justify-content:space-between;justify-content:space-between;-webkit-align-content:space-between;align-content:space-between}
+.lens{width:19.4%;height:47%;border-radius:.4vh;border:.45vh solid #0f1011;box-shadow:inset 0 0 0 .15vh #44474b;background:#1a1b1d;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;font-weight:700;font-size:2.1vh;letter-spacing:.1em;color:#3e4044;text-shadow:0 1px 0 #26272a;box-sizing:border-box}
+.lens.amb{background:radial-gradient(ellipse at center,#ffe9a8 0,#ffb22e 60%,#cf7d00 100%);color:#3a2400;text-shadow:none;box-shadow:inset 0 0 0 .15vh #44474b,0 0 2.4vh rgba(255,175,40,.55)}
+.lens.blu{background:radial-gradient(ellipse at center,#cdeeff 0,#4fa9e6 60%,#2a6fa3 100%);color:#08243a;text-shadow:none;box-shadow:inset 0 0 0 .15vh #44474b,0 0 2vh rgba(80,170,230,.45)}
+.foot{font-size:1.65vh;letter-spacing:.12em;color:#8f8b81;-webkit-justify-content:space-between;justify-content:space-between;padding:.7vh .4vw 0}
+.stale .irow,.stale .rad .rh{opacity:.35}
+</style></head>
+<body><div class="wrap" id="wrap">
+ <div class="row top">
+  <div class="inst" id="clk"></div><div class="gap"></div>
+  <div class="pnl tp grow"><div class="paper" id="paper"></div></div><div class="gap"></div>
+  <div class="lamp w" id="mw" onclick="ack('w')">MASTER<br>WARNING</div><div class="gap"></div>
+  <div class="lamp c" id="mc" onclick="ack('c')">MASTER<br>CAUTION</div>
+ </div>
+ <div class="row mid">
+  <div class="pnl ipanel"><div class="irow" id="r1"></div><div class="irow" id="r2"></div></div>
+  <div class="pnl rad grow">
+   <div class="rh"><div class="rl"><span>TAILSCALE</span><span id="tsf"></span></div><div id="ts"></div></div>
+   <div class="rh"><div class="rl"><span>RX <span class="s">MBPS</span></span><span>TX <span class="s">MBPS</span></span></div><div class="row" style="-webkit-justify-content:space-between;justify-content:space-between" id="rxtx"></div></div>
+   <div class="rh"><div class="rl"><span>SPEEDTEST <span class="s">DN / UP</span></span><span class="s" id="sta"></span></div><div id="st"></div></div>
+   <div class="rh"><div class="rl"><span>HOURS</span><span class="s" id="cnt"></span></div><div id="hob"></div></div>
+  </div>
+ </div>
+ <div class="row grow" style="min-height:0"><div class="pnl annp"><div class="ann" id="ann"></div></div></div>
+ <div class="row foot"><span id="f1"></span><span>HOME SERVER &middot; KEEP PLUGGED IN AND SWITCHED ON</span></div>
+</div>
+<script>
+var THEME = "md80";
+var offset = 0, lastOk = 0, cauKey = "", ackC = "", ackW = false, stale = false, last = null;
+var prevSet = null, lines = [], wasStale = false;
+var DAYS = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+var MONTHS = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+var FONT = 'font-family="B612,DejaVu Sans,sans-serif"', MONO = 'font-family="B612 Mono,DejaVu Sans Mono,monospace"';
+function el(id) { return document.getElementById(id); }
+function pad(n) { return n < 10 ? "0" + n : "" + n; }
+function now() { return new Date(new Date().getTime() + offset); }
+function hhmm() { var d = now(); return pad(d.getHours()) + pad(d.getMinutes()); }
+function ago(h) { return h < 1 ? Math.round(h * 60) + "M AGO" : (h < 48 ? Math.round(h) + "H AGO" : Math.round(h / 24) + "D AGO"); }
+function dur(s) { var d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600); return d ? d + "D " + h + "H" : h + "H"; }
+function P(r, a) { var t = a * Math.PI / 180; return [50 + r * Math.sin(t), 50 - r * Math.cos(t)]; }
+function f(n) { return n.toFixed(2); }
+function num(v, w, d) { var s = v.toFixed(d); while (s.length < w) s = "0" + s; return s; }
+var DEFS = '<defs><linearGradient id="drum" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000"/><stop offset=".22" stop-color="#303030"/><stop offset=".5" stop-color="#161616"/><stop offset=".78" stop-color="#303030"/><stop offset="1" stop-color="#000"/></linearGradient>' +
+  '<linearGradient id="case" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3c40"/><stop offset="1" stop-color="#1f2023"/></linearGradient>' +
+  '<radialGradient id="screw" cx=".35" cy=".35" r=".8"><stop offset="0" stop-color="#9a9da1"/><stop offset="1" stop-color="#3a3c3f"/></radialGradient></defs>';
+/* square instrument case with rounded corners, four screws and a round dial */
+function caseSvg() {
+  var s = '<svg viewBox="0 0 100 100">' + DEFS + '<rect x=".8" y=".8" width="98.4" height="98.4" rx="11" fill="url(#case)" stroke="#0c0c0d" stroke-width="1.2"/>', k, c = [[8.5, 8.5], [91.5, 8.5], [8.5, 91.5], [91.5, 91.5]];
+  for (k = 0; k < 4; k++) s += '<circle cx="' + c[k][0] + '" cy="' + c[k][1] + '" r="3.1" fill="url(#screw)" stroke="#111" stroke-width=".4"/><line x1="' + (c[k][0] - 2) + '" y1="' + (c[k][1] + 1) + '" x2="' + (c[k][0] + 2) + '" y2="' + (c[k][1] - 1) + '" stroke="#222" stroke-width=".8"/>';
+  return s + '<circle cx="50" cy="50" r="45.5" fill="#050505" stroke="#4a4d51" stroke-width="1.2"/><circle cx="50" cy="50" r="43.5" fill="#0d0d0e"/>';
+}
+function odoSvg(txt, y) {
+  var w = 7, x = 50 - txt.length * w / 2, k, s = '<rect x="' + f(x - 1.2) + '" y="' + (y - 1.2) + '" width="' + f(txt.length * w + 2.4) + '" height="13.4" fill="#000" stroke="#5a5d61" stroke-width=".6"/>';
+  for (k = 0; k < txt.length; k++) {
+    s += '<rect x="' + f(x + k * w) + '" y="' + y + '" width="' + (w - .6) + '" height="11" fill="url(#drum)"/>';
+    s += '<text x="' + f(x + k * w + (w - .6) / 2) + '" y="' + (y + 8.5) + '" fill="#f4f1e8" font-size="8.6" text-anchor="middle" ' + MONO + ">" + txt.charAt(k) + "</text>";
+  }
+  return s;
+}
+/* analog dial: 270deg sweep, white marks, red zone from redFrom (0..100) */
+var NS = {};
+function gauge(key, p, odo, name, unit, redFrom, labels) {
+  labels = labels || ["0", "2", "4", "6", "8", "10"];
+  var s = caseSvg(), k, a, p1, p2, n = labels.length - 1;
+  var r0 = P(38.5, -135 + 2.7 * redFrom), r1 = P(38.5, 135);
+  s += '<path d="M' + f(r0[0]) + "," + f(r0[1]) + " A38.5,38.5 0 0 1 " + f(r1[0]) + "," + f(r1[1]) + '" fill="none" stroke="#d8261b" stroke-width="3.4"/>';
+  for (k = 0; k <= 40; k++) {
+    var pc = k * 2.5, major = Math.abs((pc * n / 100) - Math.round(pc * n / 100)) < 0.001, mid = k % 2 == 0;
+    a = -135 + 2.7 * pc; p1 = P(41, a); p2 = P(major ? 33.5 : (mid ? 36.5 : 38.5), a);
+    s += '<line x1="' + f(p1[0]) + '" y1="' + f(p1[1]) + '" x2="' + f(p2[0]) + '" y2="' + f(p2[1]) + '" stroke="#f2efe6" stroke-width="' + (major ? 1.8 : .8) + '"/>';
+  }
+  for (k = 0; k <= n; k++) {
+    var t = P(26.5, -135 + 270 * k / n);
+    s += '<text x="' + f(t[0]) + '" y="' + f(t[1] + 3.2) + '" fill="#f2efe6" font-size="' + (labels[k].length > 2 ? 7 : 8.6) + '" font-weight="700" text-anchor="middle" ' + FONT + ">" + labels[k] + "</text>";
+  }
+  s += odoSvg(odo, 57);
+  s += '<text x="50" y="80" fill="#f2efe6" font-size="7" font-weight="700" text-anchor="middle" letter-spacing=".5" ' + FONT + ">" + name + "</text>";
+  s += '<text x="50" y="87" fill="#a19d93" font-size="4.8" text-anchor="middle" letter-spacing=".3" ' + FONT + ">" + unit + "</text>";
+  if (p !== null) {
+    var n = NS[key];
+    if (!n) n = NS[key] = { cur: p };
+    n.tgt = p;
+    s += '<g id="nd-' + key + '" transform="rotate(' + f(-135 + 2.7 * Math.max(0, Math.min(100, n.cur))) + ' 50 50)"><polygon points="50,11 52.8,50 50,60 47.2,50" fill="#f6f3ea" stroke="#000" stroke-width=".4"/></g>';
+  } else {
+    s += '<g transform="rotate(-18 50 40)"><rect x="37" y="35" width="26" height="9" fill="#c8261b" stroke="#000" stroke-width=".4"/><text x="50" y="42" fill="#fff" font-size="6.5" font-weight="700" text-anchor="middle" ' + FONT + ">OFF</text></g>";
+  }
+  return s + '<circle cx="50" cy="50" r="4.2" fill="#3b3d40" stroke="#111" stroke-width=".6"/></svg>';
+}
+/* needles ease towards new readings like a damped instrument */
+function frame() {
+  var k;
+  for (k in NS) {
+    var n = NS[k], d = n.tgt - n.cur;
+    if (d === 0) continue;
+    n.cur = Math.abs(d) < 0.05 ? n.tgt : n.cur + d * 0.06;
+    var g = el("nd-" + k);
+    if (g) g.setAttribute("transform", "rotate(" + f(-135 + 2.7 * Math.max(0, Math.min(100, n.cur))) + " 50 50)");
+  }
+}
+function inst(svg) { return '<div class="inst">' + svg + "</div>"; }
+function odoHtml(txt, cls) {
+  var s = '<span class="odo' + (cls ? " " + cls : "") + '">', k;
+  for (k = 0; k < txt.length; k++) { var c = txt.charAt(k); s += c == "." ? '<i class="dot">.</i>' : "<i>" + c + "</i>"; }
+  return s + "</span>";
+}
+/* analog clock in the same square case */
+function clock() {
+  var d = now(), h = d.getHours() % 12, m = d.getMinutes(), sec = d.getSeconds(), k, s = caseSvg();
+  for (k = 0; k < 60; k++) {
+    var big = k % 5 == 0, p1 = P(41.5, k * 6), p2 = P(big ? 35 : 39, k * 6);
+    s += '<line x1="' + f(p1[0]) + '" y1="' + f(p1[1]) + '" x2="' + f(p2[0]) + '" y2="' + f(p2[1]) + '" stroke="#f2efe6" stroke-width="' + (big ? 2 : .7) + '"/>';
+  }
+  for (k = 1; k <= 12; k++) { if (k == 3) continue; var t = P(28.5, k * 30); s += '<text x="' + f(t[0]) + '" y="' + f(t[1] + 3.3) + '" fill="#f2efe6" font-size="' + (k % 3 ? 7 : 9.5) + '" font-weight="700" text-anchor="middle" ' + FONT + ">" + k + "</text>"; }
+  s += '<rect x="63" y="45.2" width="17" height="9.6" fill="#000" stroke="#5a5d61" stroke-width=".5"/><text x="71.5" y="52.4" fill="#f4f1e8" font-size="7" text-anchor="middle" ' + MONO + ">" + pad(d.getDate()) + "</text>";
+  s += '<text x="50" y="69" fill="#a19d93" font-size="5" text-anchor="middle" letter-spacing=".4" ' + FONT + ">" + DAYS[d.getDay()] + " " + MONTHS[d.getMonth()] + "</text>";
+  s += '<text x="50" y="33" fill="#a19d93" font-size="4.6" text-anchor="middle" letter-spacing=".4" ' + FONT + ">IST</text>";
+  function hand(a, len, w, col) { var e = P(len, a), b = P(8, a + 180); return '<line x1="' + f(b[0]) + '" y1="' + f(b[1]) + '" x2="' + f(e[0]) + '" y2="' + f(e[1]) + '" stroke="' + col + '" stroke-width="' + w + '" stroke-linecap="round"/>'; }
+  s += hand((h + m / 60) * 30, 23, 3.6, "#f6f3ea") + hand((m + sec / 60) * 6, 35, 2.4, "#f6f3ea") + hand(sec * 6, 39, .9, "#e0432f");
+  el("clk").innerHTML = s + '<circle cx="50" cy="50" r="2.8" fill="#3b3d40" stroke="#111" stroke-width=".5"/></svg>';
+}
+/* teleprinter */
+function print(txt, cls) { lines.push({ t: hhmm() + "  " + txt, c: cls || "" }); if (lines.length > 40) lines.shift(); paper(); }
+function paper() {
+  var h = "", k, n = lines.length;
+  for (k = Math.max(0, n - 8); k < n; k++) h += '<div class="ln' + (lines[k].c ? " " + lines[k].c : "") + (k < n - 3 ? " old" : "") + '">' + lines[k].t + "</div>";
+  el("paper").innerHTML = h;
+}
+function teleprint(j) {
+  var cur = {}, k;
+  for (k = 0; k < j.cautions.length; k++) cur[j.cautions[k]] = 1;
+  for (k = 0; k < j.advisories.length; k++) cur[j.advisories[k]] = 1;
+  if (prevSet === null) {
+    var d = now();
+    lines.push({ t: "---- HOMELAB STATUS PRINTER ----", c: "" });
+    lines.push({ t: "HOME  " + pad(d.getDate()) + " " + MONTHS[d.getMonth()] + " " + d.getFullYear(), c: "" });
+    print("HOMELAB ONLINE. UP " + dur(j.uptime) + ".");
+    var any = false;
+    for (k in cur) { print(k + "."); any = true; }
+    if (!any) print("ALL SYSTEMS NORMAL.");
+  } else {
+    var changed = false;
+    for (k in cur) if (!prevSet[k]) { print(k + "."); changed = true; }
+    for (k in prevSet) if (!cur[k]) { print(k.replace(/ (FAIL|OVERDUE|OFFLINE|STOPPED|HIGH|NOT MOUNTED|ALMOST FULL)$/, "") + " NORMAL AGAIN."); changed = true; }
+    if (changed && !j.cautions.length && !j.advisories.length) print("ALL SYSTEMS NORMAL.");
+  }
+  prevSet = cur;
+}
+function ack(which) { if (which == "c") ackC = cauKey; else ackW = true; lights(); }
+function lights() {
+  el("mc").className = "lamp c" + (cauKey !== "" && ackC !== cauKey && !stale ? " lit" : "");
+  el("mw").className = "lamp w" + (stale && !ackW ? " lit flash" : "");
+}
+function tick() {
+  clock();
+  var s = lastOk && new Date().getTime() - lastOk > 30000;
+  if (s != stale) {
+    stale = s; ackW = false;
+    el("wrap").className = "wrap" + (stale ? " stale" : "");
+    if (stale) { print("NO SIGNAL FROM HOMELAB.", "red"); wasStale = true; }
+    if (last) draw(last); lights();
+  }
+}
+function draw(j) {
+  var X = stale, i, h = "";
+  var mp = 100 * j.mem_used / j.mem_total, G = 1073741824;
+  h += inst(gauge("cpu", X ? null : j.cpu, X ? "---" : num(j.cpu, 3, 0), "CPU", "PERCENT X10", 90));
+  h += inst(gauge("load", X ? null : Math.min(100, j.load * 12.5), X ? "-.--" : j.load.toFixed(2), "LOAD", "1 MIN AVG", 75, ["0", "2", "4", "6", "8"]));
+  h += inst(gauge("temp", X || j.temp === null ? null : j.temp, X || j.temp === null ? "---" : num(j.temp, 3, 0), "TEMP", "DEG C X10", 85));
+  h += inst(gauge("ram", X ? null : mp, X ? "--.-" : num(j.mem_used / G, 4, 1), "RAM", "GB IN USE &middot; " + (j.mem_total / G).toFixed(1) + " TOT", 90));
+  el("r1").innerHTML = h;
+  h = "";
+  for (i = 0; i < j.disks.length; i++) {
+    var d = j.disks[i];
+    if (!d.mounted) { h += inst(gauge("d" + i, null, "----", d.label, "NOT MOUNTED", 90)); continue; }
+    var p = 100 * d.used / d.total, free = d.total - d.used;
+    h += inst(gauge("d" + i, X ? null : p, X ? "---" : num(p, 3, 0), d.label, "% FULL &middot; " + (free >= 1099511627776 ? (free / 1099511627776).toFixed(2) + " TB" : (free / G).toFixed(0) + " GB") + " FREE", 90));
+  }
+  h += inst(gauge("rx", X ? null : Math.min(100, j.rx / 1e6), X ? "--.-" : (j.rx >= 1e8 ? num(j.rx / 1e6, 4, 0) : num(j.rx / 1e6, 4, 1)), "NET RX", "MBPS", 90, ["0", "20", "40", "60", "80", "100"]));
+  el("r2").innerHTML = h;
+  el("ts").innerHTML = odoHtml(j.tailscale.ip || "---.---.---.---", "sm");
+  el("tsf").innerHTML = (j.tailscale.online ? "ON" : "OFF") + '<span class="flag ' + (j.tailscale.online ? "on" : "off") + '"></span>';
+  el("rxtx").innerHTML = odoHtml(num(j.rx / 1e6, 5, 1)) + odoHtml(num(j.tx / 1e6, 5, 1));
+  var st = j.speedtest;
+  el("st").innerHTML = st ? odoHtml(num(st.down, 3, 0)) + '<span class="u">/</span>' + odoHtml(num(st.up, 3, 0)) : '<span class="u">NO DATA</span>';
+  el("sta").innerHTML = st ? st.ping.toFixed(0) + " MS &middot; " + (st.age_h !== null ? ago(st.age_h) : "") : "";
+  el("hob").innerHTML = odoHtml(num(j.uptime / 3600, 6, 1));
+  el("cnt").innerHTML = "SINCE BOOT";
+  h = "";
+  for (i = 0; i < j.services.length; i++) {
+    var v = j.services[i];
+    h += '<div class="lens' + (v.status == "down" ? " amb" : (v.status == "starting" ? " blu" : "")) + '">' + v.label.toUpperCase() + "</div>";
+  }
+  var pr = j.printer;
+  if (pr) h += '<div class="lens' + (pr.state == "stopped" ? " amb" : (pr.usb && (pr.state == "printing" || pr.jobs) ? " blu" : "")) + '">PRINTER</div>';
+  h += '<div class="lens' + (j.backup.ok ? "" : " amb") + '">BACKUP</div>';
+  el("ann").innerHTML = h;
+  var bt = j.battery;
+  el("f1").innerHTML = (bt ? "BATTERY " + bt.pct + "% " + bt.status.toUpperCase() + " &middot; " : "") + j.containers_running + "/" + j.containers_total + " CONTAINERS &middot; LAST BACKUP " + (j.backup.age_h === null ? "NEVER" : ago(j.backup.age_h));
+}
+function render(j) {
+  if (j.theme && j.theme != THEME) { location.reload(); return; }
+  offset = j.time * 1000 - new Date().getTime(); lastOk = new Date().getTime(); last = j;
+  if (stale) { stale = false; el("wrap").className = "wrap"; }
+  if (wasStale) { print("HOMELAB SIGNAL RESTORED."); wasStale = false; }
+  cauKey = j.cautions.join("|"); if (cauKey === "") ackC = "";
+  teleprint(j); draw(j); lights();
+}
+function poll() {
+  var x = new XMLHttpRequest();
+  x.open("GET", "/api?t=" + new Date().getTime(), true);
+  x.onreadystatechange = function () { if (x.readyState == 4 && x.status == 200) { try { render(JSON.parse(x.responseText)); } catch (e) {} } };
+  x.send();
+}
+tick(); poll(); setInterval(tick, 1000); setInterval(poll, 5000); setInterval(frame, 40);
+setTimeout(function () { if (!lastOk) lastOk = 1; }, 30000);
+</script></body></html>

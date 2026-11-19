@@ -1,0 +1,22 @@
+#!/bin/bash
+# Nightly versioned backups of the 2 TB to the 1 TB (restic)
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export RESTIC_REPOSITORY=/srv/backup/restic
+export RESTIC_PASSWORD_FILE=/home/akshit/.restic-pass
+mountpoint -q /srv/media && mountpoint -q /srv/backup || { echo "$(date '+%F %T') a drive is not mounted, skipped"; exit 1; }
+M=/srv/media
+touch /home/akshit/.backup-exclude
+# 1. Irreplaceable folders: kept for a year (06_Videos_Cloud skipped on purpose: it has a cloud copy)
+restic backup --host homelab --tag nightly \
+  "$M/02_Sync" "$M/03_Critical" "$M/05_Event_Photos" "$M/07_Videos_Local" \
+  --exclude "$M/03_Critical/immich/thumbs" --exclude "$M/03_Critical/immich/encoded-video" \
+  --exclude ".stversions" --exclude-file /home/akshit/.backup-exclude || exit 1
+restic forget --host homelab --tag nightly --keep-daily 14 --keep-weekly 8 --keep-monthly 12 || exit 1
+# 2. Unsorted photos: short window, so deleting a photo removes it from the backup after 7 days
+restic backup --host homelab --tag unsorted "$M/08_Photos_Unsorted" \
+  --exclude ".DS_Store" --exclude "._*" || exit 1
+restic forget --host homelab --tag unsorted --keep-daily 7 || exit 1
+# Sundays: free the space of expired snapshots and spot-check 5% of the stored data
+if [ "$(date +%u)" = 7 ]; then restic prune && restic check --read-data-subset 5% || exit 1; fi
+date '+%F %T' > /home/akshit/last-backup.txt
+echo "$(date '+%F %T') backup ok"

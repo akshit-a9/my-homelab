@@ -1,0 +1,18 @@
+[Unit]
+Description=Homelab status board on tty1
+After=multi-user.target docker.service tailscaled.service
+Conflicts=getty@tty1.service
+
+[Service]
+ExecStart=/usr/local/bin/homelab-status
+StandardInput=tty
+StandardOutput=tty
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+Environment=TERM=linux
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

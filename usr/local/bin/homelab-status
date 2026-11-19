@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# Homelab status board for the laptop screen (tty1).
+# Screen stays off; any key shows the board for 60 s, each extra key adds 60 s.
+SHOW_FOR=60
+BL=/sys/class/backlight/intel_backlight
+[ -w "$BL/brightness" ] && echo $(( $(cat $BL/max_brightness) * 50 / 100 )) > "$BL/brightness"
+setterm --cursor off --blank 0 2>/dev/null   # the script, not the kernel timer, decides when to blank
+
+row() { printf '  %-14s %s\n' "$1" "$2"; }
+svc() {
+  s=$(docker inspect -f '{{.State.Status}}{{if .State.Health}} ({{.State.Health.Status}}){{end}}' "$1" 2>/dev/null) || s="not running"
+  row "$2" "$s"
+}
+
+draw() {
+  temp=""
+  for z in /sys/class/thermal/thermal_zone*; do
+    [ "$(cat $z/type 2>/dev/null)" = x86_pkg_temp ] && temp="$(( $(cat $z/temp) / 1000 ))°C"
+  done
+  bat="$(cat /sys/class/power_supply/BAT*/capacity 2>/dev/null)% $(cat /sys/class/power_supply/BAT*/status 2>/dev/null)"
+  ts=$(tailscale ip -4 2>/dev/null | head -1)
+  last=$(cat /home/akshit/last-backup.txt 2>/dev/null || echo never)
+
+  printf '\033[H\033[2J'
+  printf '\n  HOMELAB  ·  Home server. Please keep it plugged in and switched on.\n\n'
+  row "Time"      "$(date '+%a %d %b  %H:%M')"
+  row "Up for"    "$(uptime -p | sed 's/^up //')"
+  row "CPU"       "${temp:-?}   load $(cut -d' ' -f1-3 /proc/loadavg)"
+  row "RAM"       "$(free -h | awk '/^Mem/{print $3" used of "$2}')"
+  row "Battery"   "$bat"
+  row "Tailscale" "${ts:-OFFLINE}"
+  echo
+  for m in /srv/media /srv/backup; do
+    if mountpoint -q "$m"; then
+      row "$m" "$(df -h --output=used,size,pcent "$m" | tail -1 | awk '{print $1" / "$2"  ("$3")"}')"
+    else
+      row "$m" "NOT MOUNTED"
+    fi
+  done
+  row "Last backup" "$last"
+  echo
+  svc pitwall-pitwall-1   "Pitwall"
+  svc immich_server       "Immich"
+  svc jellyfin-jellyfin-1 "Jellyfin"
+  printf '\n  (screen switches off after %s s without a key press)\n' "$SHOW_FOR"
+}
+
+while true; do
+  printf '\033[H\033[2J'
+  setterm --blank force 2>/dev/null       # screen off
+  read -rsn1                               # wait for any key
+  setterm --blank poke 2>/dev/null        # screen on
+  end=$(( SECONDS + SHOW_FOR ))
+  while [ "$SECONDS" -lt "$end" ]; do
+    draw
+    if read -rsn1 -t 10; then end=$(( SECONDS + SHOW_FOR )); fi
+  done
+done

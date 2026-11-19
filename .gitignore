@@ -1,0 +1,55 @@
+# Secrets: never commit. Templates (*.example) are fine.
+.env
+.env.*
+!.env.example
+secrets.json
+.restic-pass
+*restic-pass*
+ts-state/
+**/ts-state/
+
+# Keys and certificates
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+etc/cups/ssl/
+
+# Backup repository and archives
+restic/
+*.tar.gz
+
+# App data folders
+opt/adguard/work/
+opt/adguard/conf/
+opt/syncthing/data/
+opt/uptime-kuma/data/
+opt/dockge/data/
+opt/jellyfin/config/
+opt/jellyfin/cache/
+opt/immich/postgres/
+opt/pitwall/data/
+opt/pitwall/trigger/
+opt/pitwall/src/
+opt/speedtest/config/
+opt/homelab-board/fonts/
+
+# Leftovers
+*.bak
+*.O
+*.tmp
+
+# Private words replaced by sync.sh (contains the words themselves)
+.sync-redact
+
+# Raw photos/screenshots: they carry GPS/EXIF and unblurred text. Only images/ (cleaned) is committed.
+*.zip
+*.heic
+*.HEIC
+/Screenshot*.png
+/*.jpg
+/*.jpeg
+

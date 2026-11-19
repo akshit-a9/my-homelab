@@ -1,0 +1,5 @@
+[Path]
+PathModified=/opt/pitwall/trigger/request
+
+[Install]
+WantedBy=multi-user.target

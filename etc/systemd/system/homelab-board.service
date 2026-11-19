@@ -1,0 +1,13 @@
+[Unit]
+Description=Homelab status board (web page on port 8088)
+After=network-online.target docker.service tailscaled.service
+Wants=network-online.target
+
+[Service]
+User=akshit
+ExecStart=/usr/bin/python3 /opt/homelab-board/board.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

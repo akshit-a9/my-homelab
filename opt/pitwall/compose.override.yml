@@ -1,0 +1,10 @@
+services:
+  files:
+    image: python:3.12-alpine
+    user: "1000:1000"
+    network_mode: service:ts-pitwall
+    depends_on: [ts-pitwall]
+    command: python -m http.server 8030 --directory /races
+    volumes:
+      - ./data/races:/races:ro
+    restart: unless-stopped
